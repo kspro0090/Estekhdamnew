@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block content %}
+<h3 class="mb-3">پرونده‌ها</h3>
+
+<form class="d-flex gap-2 mb-3" method="get" action="{{ url_for('recruiter.dashboard') }}">
+  <input name="q" class="form-control" placeholder="جست‌وجوی نام/موبایل/کدملی" value="{{ q or '' }}">
+  <button class="btn btn-primary">جست‌وجو</button>
+</form>
+
+<!-- دکمهٔ تعریف متقاضی جدید (فقط برای ادمین جذب و ادمین کل) -->
+<div class="mb-3">
+  {% if current_user.role and current_user.role.name in ['recruiter','owner','admin'] %}
+    <a class="btn btn-success" href="{{ url_for('recruiter.create_case') }}">تعریف متقاضی جدید</a>
+  {% endif %}
+</div>
+
+<!-- سه دکمهٔ صف‌ها با شمارنده‌ها -->
+<div class="d-grid gap-2 mb-3">
+  <a class="btn btn-outline-primary text-start" href="{{ url_for('recruiter.docs_queue') }}">
+    بررسی مدارک
+    <span class="badge text-bg-secondary ms-2">کل: {{ (stats.docs.total or 0)|pnum }}</span>
+    <span class="badge text-bg-warning text-dark ms-1">بررسی‌نشده: {{ (stats.docs.pending or 0)|pnum }}</span>
+  </a>
+  <a class="btn btn-outline-primary text-start" href="{{ url_for('recruiter.videos_queue') }}">
+    ویدئوها
+    <span class="badge text-bg-secondary ms-2">کل: {{ (stats.videos.total or 0)|pnum }}</span>
+    <span class="badge text-bg-warning text-dark ms-1">بررسی‌نشده: {{ (stats.videos.pending or 0)|pnum }}</span>
+  </a>
+  <a class="btn btn-outline-primary text-start" href="{{ url_for('recruiter.physical_queue') }}">
+    تحویل فیزیکی
+    <span class="badge text-bg-secondary ms-2">کل: {{ (stats.physical.total or 0)|pnum }}</span>
+    <span class="badge text-bg-warning text-dark ms-1">بررسی‌نشده: {{ (stats.physical.pending or 0)|pnum }}</span>
+  </a>
+</div>
+
+<table class="table table-striped align-middle">
+  <thead>
+    <tr><th>#</th><th>نام و نام‌خانوادگی</th><th>کدملی</th><th>تاریخ ایجاد (شمسی)</th><th>اقدامات</th></tr>
+  </thead>
+  <tbody>
+  {% for row in cases %}
+    {% set c = row.case %}
+    <tr>
+      <td>{{ loop.index }}</td>
+      <td>{{ c.full_name or (c.candidate and c.candidate.full_name) or '—' }}</td>
+      <td>{{ c.national_id|pnum }}</td>
+      <td>{{ c.created_at|jdate_hm }}</td>
+      <td class="d-flex gap-2">
+        <a class="btn btn-sm btn-primary {{ 'disabled' if not row.has_docs }}" href="{{ url_for('recruiter.review_docs', case_id=c.id) }}">بررسی مدارک</a>
+        <a class="btn btn-sm btn-secondary {{ 'disabled' if not row.has_video }}" href="{{ url_for('recruiter.videos_queue') }}">ویدئوها</a>
+        <a class="btn btn-sm btn-dark {{ 'disabled' if not row.has_physical }}" href="{{ url_for('recruiter.physical_queue') }}">تحویل فیزیکی</a>
+        <form action="{{ url_for('recruiter.delete_case_hard', case_id=c.id) }}" method="post" class="d-inline">
+         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+         <button class="btn btn-sm btn-outline-danger"
+                 onclick="return confirm('حذف این پرونده؟ این کار قابل بازگشت نیست.');">
+           حذف
+            </button>
+        </form>
+
+      </td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endblock %}
