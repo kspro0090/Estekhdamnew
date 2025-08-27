@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h3 class="mb-0">اطلاعات کاربر</h3>
+  <a href="{{ url_for('recruiter.dashboard') }}" class="btn btn-light">بازگشت به پنل</a>
+</div>
+<div class="card shadow-sm">
+  <div class="card-body">
+    <dl class="row mb-0">
+      <dt class="col-sm-3">نام</dt>
+      <dd class="col-sm-9">{{ user.full_name or '-' }}</dd>
+      <dt class="col-sm-3">نام‌کاربری</dt>
+      <dd class="col-sm-9">{{ user.username }}</dd>
+      <dt class="col-sm-3">موبایل</dt>
+      <dd class="col-sm-9">{{ user.mobile }}</dd>
+      <dt class="col-sm-3">ایمیل</dt>
+      <dd class="col-sm-9">{{ user.email or '-' }}</dd>
+      <dt class="col-sm-3">کدملی</dt>
+      <dd class="col-sm-9">{{ user.national_id or '-' }}</dd>
+    </dl>
+  </div>
+</div>
+{% endblock %}
